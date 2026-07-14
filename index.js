@@ -68,7 +68,10 @@ client.on('clientReady', async () => {
                                       `🔠 **2. Sambung Kata**\n` +
                                       `- Perbaikan sistem UI papan (Board Display) Sambung Kata.\n` +
                                       `- Kestabilan permainan ditingkatkan agar lebih mulus saat dimainkan beramai-ramai.\n\n` +
-                                      `*Terima kasih telah bermain, nantikan minigame seru lainnya!* 🎉`;
+                                      `💪 **3. Tarik Tambang**\n` +
+                                      `- Minigame klasik 17 Agustusan kini siap dimainkan!\n` +
+                                      `- Fitur meteran kekuatan dan animasi keren untuk mengalahkan lawan.\n\n` +
+                                      `*Terima kasih telah bermain, nantikan minigame seru lainnya (Balap Karung menyusul)!* 🎉`;
                 await channel.send(updateMessage);
                 console.log("Berhasil mengirim auto-update log ke channel.");
             }
@@ -171,7 +174,10 @@ client.on('messageCreate', async (message) => {
                                   `🔠 **2. Sambung Kata**\n` +
                                   `- Perbaikan sistem UI papan (Board Display) Sambung Kata.\n` +
                                   `- Kestabilan permainan ditingkatkan agar lebih mulus saat dimainkan beramai-ramai.\n\n` +
-                                  `*Terima kasih telah bermain, nantikan minigame seru lainnya!* 🎉`;
+                                  `💪 **3. Tarik Tambang**\n` +
+                                  `- Minigame klasik 17 Agustusan kini siap dimainkan!\n` +
+                                  `- Fitur meteran kekuatan dan animasi keren untuk mengalahkan lawan.\n\n` +
+                                  `*Terima kasih telah bermain, nantikan minigame seru lainnya (Balap Karung menyusul)!* 🎉`;
                                   
             try {
                 await channel.send(updateMessage);
