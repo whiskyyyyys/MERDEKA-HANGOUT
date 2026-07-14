@@ -64,7 +64,7 @@ client.on('messageCreate', async (message) => {
     const command = args.shift().toLowerCase();
 
     // Command List
-    if (['kick', 'kill', 'announce', 'ban', 'unban', 'warn', 'freeze', 'thaw', 'merdeka', 'tp', 'jail', 'unjail', 'givevip', 'restart', 'help', 'setlevel'].includes(command)) {
+    if (['kick', 'kill', 'announce', 'ban', 'unban', 'warn', 'freeze', 'thaw', 'merdeka', 'tp', 'jail', 'unjail', 'givevip', 'restart', 'help', 'setlevel', 'updatelog'].includes(command)) {
         
         // ==========================================
         // SISTEM KEAMANAN (HIERARKI DISCORD ID)
@@ -115,7 +115,7 @@ client.on('messageCreate', async (message) => {
         }
 
         let allowed = false;
-        if (command === 'givevip' || command === 'restart' || command === 'setlevel') {
+        if (command === 'givevip' || command === 'restart' || command === 'setlevel' || command === 'updatelog') {
             allowed = isOwner; // Hanya Owner & CEO
         } else if (['ban', 'unban', 'announce', 'merdeka', 'kill'].includes(command)) {
             allowed = isAdmin; // Admin ke atas
@@ -129,6 +129,35 @@ client.on('messageCreate', async (message) => {
 
         let target = "";
         let commandArgs = "";
+        
+        if (command === 'updatelog') {
+            const channelId = process.env.UPDATE_LOG_CHANNEL_ID;
+            if (!channelId) {
+                return message.reply("⛔ Konfigurasi `UPDATE_LOG_CHANNEL_ID` belum diset di Railway/Environment Variables!");
+            }
+            const channel = client.channels.cache.get(channelId);
+            if (!channel) {
+                return message.reply("⛔ Tidak dapat menemukan channel dengan ID tersebut. Pastikan bot ada di server yang sama dan memiliki izin 'View Channel' & 'Send Messages'.");
+            }
+            
+            const updateMessage = `📢 **UPDATE LOG TERBARU - MERDEKA HANGOUT** 📢\n\n` +
+                                  `Halo semuanya! Kami baru saja merilis pembaruan seru untuk sistem Minigames kita!\n\n` +
+                                  `🎮 **1. Jawab Kata (Trivia)**\n` +
+                                  `- Minigame adu cepat menjawab (Jawab Kata) sekarang sudah online!\n` +
+                                  `- Bersainglah dengan pemain lain untuk menjadi yang paling cepat dan pintar.\n\n` +
+                                  `🔠 **2. Sambung Kata**\n` +
+                                  `- Perbaikan sistem UI papan (Board Display) Sambung Kata.\n` +
+                                  `- Kestabilan permainan ditingkatkan agar lebih mulus saat dimainkan beramai-ramai.\n\n` +
+                                  `*Terima kasih telah bermain, nantikan minigame seru lainnya!* 🎉`;
+                                  
+            try {
+                await channel.send(updateMessage);
+                return message.reply(`✅ Berhasil mengirim Update Log ke channel <#${channelId}>!`);
+            } catch (err) {
+                console.error("Gagal mengirim update log:", err);
+                return message.reply("⛔ Gagal mengirim pesan ke channel tersebut. Cek permission bot.");
+            }
+        }
 
         if (command === 'announce' || command === 'merdeka' || command === 'restart') {
             commandArgs = args.join(" ");
