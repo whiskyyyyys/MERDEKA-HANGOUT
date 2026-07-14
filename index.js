@@ -53,6 +53,29 @@ client.on('clientReady', async () => {
     } catch (e) {
         console.log("Gagal mengirim DM ke owner. Mungkin DM diblokir.");
     }
+    
+    // Auto-send Update Log saat bot menyala
+    const channelId = process.env.UPDATE_LOG_CHANNEL_ID;
+    if (channelId && process.env.AUTO_SEND_LOG === 'true') {
+        try {
+            const channel = await client.channels.fetch(channelId);
+            if (channel) {
+                const updateMessage = `📢 **UPDATE LOG TERBARU - MERDEKA HANGOUT** 📢\n\n` +
+                                      `Halo semuanya! Kami baru saja merilis pembaruan seru untuk sistem Minigames kita!\n\n` +
+                                      `🎮 **1. Jawab Kata (Trivia)**\n` +
+                                      `- Minigame adu cepat menjawab (Jawab Kata) sekarang sudah online!\n` +
+                                      `- Bersainglah dengan pemain lain untuk menjadi yang paling cepat dan pintar.\n\n` +
+                                      `🔠 **2. Sambung Kata**\n` +
+                                      `- Perbaikan sistem UI papan (Board Display) Sambung Kata.\n` +
+                                      `- Kestabilan permainan ditingkatkan agar lebih mulus saat dimainkan beramai-ramai.\n\n` +
+                                      `*Terima kasih telah bermain, nantikan minigame seru lainnya!* 🎉`;
+                await channel.send(updateMessage);
+                console.log("Berhasil mengirim auto-update log ke channel.");
+            }
+        } catch (e) {
+            console.log("Gagal mengirim auto-update log:", e.message);
+        }
+    }
 });
 
 client.on('messageCreate', async (message) => {
