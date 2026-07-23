@@ -27,6 +27,7 @@ local vfxBtn = vfxFrame:WaitForChild("OnOff")
 -- Set status awal langsung tertutup!
 settingsGui.Enabled = false
 settingsF.Visible = false
+settingsF.AnchorPoint = Vector2.new(0.5, 0.5) -- Pastikan AnchorPoint di tengah agar posisi 0.5, 0.5 pas di tengah layar
 
 -- Setup Efek Blur
 local blurEffect = Lighting:FindFirstChild("SettingsBlur")

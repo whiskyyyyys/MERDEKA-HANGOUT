@@ -13,6 +13,17 @@ if not RejoinRemote then
 	RejoinRemote.Parent = ReplicatedStorage
 end
 
+local AutoFishingRemote = ReplicatedStorage:FindFirstChild("SetAutoFishing")
+if not AutoFishingRemote then
+	AutoFishingRemote = Instance.new("RemoteEvent")
+	AutoFishingRemote.Name = "SetAutoFishing"
+	AutoFishingRemote.Parent = ReplicatedStorage
+end
+
+AutoFishingRemote.OnServerEvent:Connect(function(player, isAuto)
+	player:SetAttribute("IsAutoFishing", isAuto == true)
+end)
+
 local MAX_OFFLINE_TIME = 3600 
 local savingPlayers = {}
 
@@ -52,7 +63,8 @@ local function savePlayerPosition(player)
 	if savedCFrame then
 		local data = {
 			CFrame = savedCFrame,
-			Time = os.time()
+			Time = os.time(),
+			IsAutoFishing = player:GetAttribute("IsAutoFishing") or false
 		}
 		local success, err = pcall(function()
 			PositionStore:SetAsync(tostring(player.UserId), data)
@@ -77,6 +89,10 @@ Players.PlayerAdded:Connect(function(player)
 
 	if success and savedData then
 		if os.time() - savedData.Time <= MAX_OFFLINE_TIME then
+			if savedData.IsAutoFishing then
+				player:SetAttribute("ResumeAutoFishing", true)
+			end
+			
 			player.CharacterAdded:Connect(function(char)
 				-- PENTING: Pastikan teleportasi HANYA terjadi 1x (saat join). 
 				-- Jika pemain mati/reset, mereka akan spawn di tempat normal.

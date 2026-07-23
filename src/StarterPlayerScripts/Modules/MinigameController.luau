@@ -23,6 +23,10 @@ function MinigameController.new(gui)
 		catchProgress:WaitForChild("3"),
 	}
 	self.catchButton = barFrame:WaitForChild("CatchButton")
+	self.autoButton = mainFish:WaitForChild("Auto")
+	self.autoText = self.autoButton:WaitForChild("Text", 5)
+	
+	self.catchProgressFrame = catchProgress
 
 	self.isActive = false
 	self.connection = nil
@@ -38,6 +42,49 @@ function MinigameController.new(gui)
 	return self
 end
 
+function MinigameController:ShowAutoIdle()
+	self.mainFish.Enabled = true
+	self.barFrame.Visible = false -- Matikan BarFrame karena Auto sekarang di luarnya!
+	
+	self.autoButton.Visible = true
+	
+	-- Pastikan gradient / warnanya hijau (AUTO) jika tidak sedang jalan
+	local gradient = self.autoButton:FindFirstChild("UIGradient")
+	if gradient then
+		gradient.Color = ColorSequence.new(Color3.fromRGB(50, 200, 50), Color3.fromRGB(30, 150, 30))
+	else
+		self.autoButton.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+	end
+	if self.autoText and self.autoText:IsA("TextLabel") then
+		self.autoText.Text = "AUTO"
+	end
+end
+
+function MinigameController:HideAutoIdle()
+	self.autoButton.Visible = false
+	self.mainFish.Enabled = false
+end
+
+function MinigameController:SetAutoModeUI(isAuto)
+	if isAuto then
+		self.barFrame.Visible = false -- Sembunyikan bar minigame saat Auto jalan
+		
+		-- Ubah gaya tombol menjadi STOP AUTO
+		local gradient = self.autoButton:FindFirstChild("UIGradient")
+		if gradient then
+			gradient.Color = ColorSequence.new(Color3.fromRGB(200, 50, 50), Color3.fromRGB(150, 30, 30))
+		else
+			self.autoButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+		end
+		
+		if self.autoText and self.autoText:IsA("TextLabel") then
+			self.autoText.Text = "STOP AUTO"
+		end
+	else
+		self:ShowAutoIdle() -- Kembali ke state awal pegang pancingan
+	end
+end
+
 function MinigameController:_resetProgressColors()
 	for _, frame in self.progressFrames do
 		frame.BackgroundColor3 = FishConfig.COLOR_PENDING
@@ -47,31 +94,51 @@ end
 function MinigameController:_setAttempt(index)
 	local stage = FishConfig.STAGES[index]
 	self.hitZone.Size = UDim2.new(stage.zoneScale, 0, 1, 0)
-	self.hitZone.Position = UDim2.new(0.5 - stage.zoneScale / 2, 0, 0, 0)
+	
+	-- Acak posisi X (dari 0 sampai sisa ruang dikurangi skala zone)
+	local maxOffset = 1 - stage.zoneScale
+	local randomOffset = math.random() * maxOffset
+	self.hitZone.Position = UDim2.new(randomOffset, 0, 0, 0)
+	
+	-- Simpan batas hit zone agar bisa dicek nanti
+	self.currentZoneMin = randomOffset
+	self.currentZoneMax = randomOffset + stage.zoneScale
+	
 	self.elapsed = 0
 end
 
-function MinigameController:Start(onComplete)
+function MinigameController:Start(onComplete, isAuto)
 	if self.isActive then return end
 	self.isActive = true
 	self.onComplete = onComplete
 	self.attemptIndex = 1
 	self.hitCount = 0
 
+	self.mainFish.Enabled = true
+	self.barFrame.Visible = true
+
+	if isAuto then
+		self:SetAutoModeUI(true)
+		-- Otomatis selesai dengan jeda acak agar lebih natural (2 hingga 4 detik)
+		local randomDelay = math.random(20, 40) / 10
+		task.delay(randomDelay, function()
+			if self.isActive then
+				self.hitCount = 5 -- Sempurna
+				self:_finish()
+			end
+		end)
+		return
+	end
+
+	-- JIKA MANUAL CATCH: Sembunyikan tombol Auto, munculkan bar
+	self.autoButton.Visible = false
 	self:_resetProgressColors()
 	self:_setAttempt(self.attemptIndex)
 
-	-- ScreenGui dinyalain, tapi HANYA BarFrame yang ditampilkan sekarang.
-	-- AcquiredFrame/ResultFrame biar tetap Enabled=true di parent-nya tapi
-	-- Visible mereka sendiri diatur oleh ResultController, bukan di sini.
-	self.mainFish.Enabled = true
-	self.barFrame.Visible = true
 	self.hitZone.Visible = true
 	self.cursor.Visible = true
 	self.catchButton.Visible = true
-	for _, frame in self.progressFrames do
-		frame.Visible = true
-	end
+	if self.catchProgressFrame then self.catchProgressFrame.Visible = true end
 
 	self.connection = RunService.RenderStepped:Connect(function(dt)
 		self.elapsed += dt
@@ -103,8 +170,8 @@ function MinigameController:AttemptHit()
 
 	local stage = FishConfig.STAGES[self.attemptIndex]
 	local cursorX = self.cursor.Position.X.Scale
-	local zoneMin = 0.5 - stage.zoneScale / 2
-	local zoneMax = 0.5 + stage.zoneScale / 2
+	local zoneMin = self.currentZoneMin or (0.5 - stage.zoneScale / 2)
+	local zoneMax = self.currentZoneMax or (0.5 + stage.zoneScale / 2)
 	local currentFrame = self.progressFrames[self.attemptIndex]
 
 	local isHit = cursorX >= zoneMin and cursorX <= zoneMax

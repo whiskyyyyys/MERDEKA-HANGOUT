@@ -72,7 +72,8 @@ end
 function ResultController:_dismiss()
 	self.acquiredFrame.Visible = false
 	self.resultFrame.Visible = false
-	self.mainFish.Enabled = false
+	-- JANGAN matikan mainFish.Enabled di sini, karena tombol AUTO ada di dalamnya
+	-- biarkan FishingClient / MinigameController yang mematikan jika pancingan dilepas
 
 	if self._onDismiss then
 		local callback = self._onDismiss

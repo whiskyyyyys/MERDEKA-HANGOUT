@@ -22,12 +22,12 @@ local getSpins = ReplicatedStorage:WaitForChild("_GetSpins")
 
 -- Daftar Hadiah dan Peluangnya
 local REWARDS = {
-	{ id = 1, type = "MHCoin", amount = 4,     chance = 0.1,  angle = 0   }, -- Top
-	{ id = 2, type = "Cash",   amount = 25000, chance = 55.5, angle = 300 }, -- Top-Right
-	{ id = 3, type = "Cash",   amount = 50000, chance = 34.0, angle = 240 }, -- Bottom-Right
-	{ id = 4, type = "MHCoin", amount = 2,     chance = 0.9,  angle = 180 }, -- Bottom (6% di gambar tapi 0.9% teks?) Anggap 0.9% untuk seimbang
-	{ id = 5, type = "Cash",   amount = 75000, chance = 7.5,  angle = 120 }, -- Bottom-Left
-	{ id = 6, type = "Cash",   amount = 100000,chance = 2.0,  angle = 60  }, -- Top-Left
+	{ id = 1, type = "MHCoin", amount = 2,      chance = 4.0,  angle = 0   }, -- Top (2 MH)
+	{ id = 2, type = "Cash",   amount = 25000,  chance = 40.0, angle = 300 }, -- Top-Right (Rp 25.000)
+	{ id = 3, type = "Cash",   amount = 10000,  chance = 40.0, angle = 240 }, -- Bottom-Right (Rp 10.000)
+	{ id = 4, type = "MHCoin", amount = 1,      chance = 10.0, angle = 180 }, -- Bottom (1 MH)
+	{ id = 5, type = "Cash",   amount = 150000, chance = 5.0,  angle = 120 }, -- Bottom-Left (Rp 150.000)
+	{ id = 6, type = "Cash",   amount = 250000, chance = 1.0,  angle = 60  }, -- Top-Left (Rp 250.000)
 }
 
 -- Pastikan total chance = 100%

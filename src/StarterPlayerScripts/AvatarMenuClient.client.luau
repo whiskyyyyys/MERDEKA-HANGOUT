@@ -63,33 +63,10 @@ local contentScroll = mainFrame:FindFirstChild("ScrollingFrame") or mainFrame:Wa
 local avatarSection = contentScroll and (contentScroll:FindFirstChild("aAvatar") or contentScroll:WaitForChild("aAvatar", 5))
 local buttonsSection = contentScroll and (contentScroll:FindFirstChild("bButtons") or contentScroll:WaitForChild("bButtons", 5))
 
--- CREATE CARRY OPTIONS SECTION (overlay langsung di mainFrame)
-local carryOptionsSection = Instance.new("ScrollingFrame")
-carryOptionsSection.Name = "CarryOptionsSection"
-carryOptionsSection.Size = UDim2.new(1, 0, 1, 0)
-carryOptionsSection.Position = UDim2.new(0, 0, 0, 0)
-carryOptionsSection.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-carryOptionsSection.BackgroundTransparency = 0.15
-carryOptionsSection.BorderSizePixel = 0
-carryOptionsSection.Visible = false
-carryOptionsSection.CanvasSize = UDim2.new(0, 0, 0, 0)
-carryOptionsSection.AutomaticCanvasSize = Enum.AutomaticSize.Y
-carryOptionsSection.ScrollBarThickness = 4
-carryOptionsSection.ZIndex = 100
-carryOptionsSection.Parent = mainFrame
-
-local carryPadding = Instance.new("UIPadding")
-carryPadding.PaddingTop = UDim.new(0, 10)
-carryPadding.PaddingBottom = UDim.new(0, 10)
-carryPadding.PaddingLeft = UDim.new(0, 5)
-carryPadding.PaddingRight = UDim.new(0, 5)
-carryPadding.Parent = carryOptionsSection
-
-local carryListLayout = Instance.new("UIListLayout")
-carryListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-carryListLayout.Padding = UDim.new(0, 8)
-carryListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-carryListLayout.Parent = carryOptionsSection
+-- CARRY SELECT: Menggunakan BindableEvent agar GUI terpisah (CarrySelectClient) bisa menangani UI
+local carrySelectSignal = Instance.new("BindableEvent")
+carrySelectSignal.Name = "CarrySelectSignal"
+carrySelectSignal.Parent = playerGui
 
 local function findFirstByNameList(root, names)
 	if not root then
@@ -347,7 +324,10 @@ local HIDE_AVATAR_TEXT = "Hide avatar"
 local SHOW_AVATAR_TEXT = "Show avatar"
 
 setMenuButtonText(orderedActionButtons[1], "Carry Player")
-setMenuButtonText(orderedActionButtons[2], "Gift Shop Item")
+if orderedActionButtons[2] then
+	orderedActionButtons[2].Visible = false
+	orderedActionButtons[2]:Destroy() -- Hapus tombol Gift Gamepass sepenuhnya
+end
 setMenuButtonText(orderedActionButtons[3], "Add friend")
 setMenuButtonText(orderedActionButtons[4], PRIVATE_CHAT_TEXT)
 setMenuButtonText(orderedActionButtons[5], HIDE_AVATAR_TEXT)
@@ -358,11 +338,6 @@ local syncButton =
 	or claimActionButtonByKeywords({"carry player", "carry"})
 	or claimActionButtonByIndex(1)
 
-local giftButton =
-	mainFrame:FindFirstChild("GiftButton")
-	or findActionButtonByText("Gift Shop Item")
-	or claimActionButtonByKeywords({"gift shop item", "gift gamepass", "gift"})
-	or claimActionButtonByIndex(2)
 
 local addFriendButton =
 	mainFrame:FindFirstChild("AddButton")
@@ -451,6 +426,10 @@ local function updateSyncButtonVisual(isActive)
 
 	syncButton.Visible = true
 	syncButton.Active = true
+	
+	if syncButtonTextObject and syncButtonTextObject:IsA("TextLabel") then
+		syncButtonTextObject.Text = "Carry"
+	end
 end
 
 -- Debug print
@@ -2032,14 +2011,9 @@ local function openAvatarMenu(targetPlayer)
 	print("Menu opened:", targetPlayer.Name)
 end
 
--- Simple show/hide for carry overlay
-local function hideCarryOverlay()
-	carryOptionsSection.Visible = false
-end
-
-local function showCarryOverlay()
-	carryOptionsSection.Visible = true
-end
+-- Carry overlay sudah dipindahkan ke script terpisah (CarrySelectClient)
+local function hideCarryOverlay() end
+local function showCarryOverlay() end
 
 -- CLOSE MENU (slide out)
 local function closeAvatarMenu()
@@ -2160,115 +2134,19 @@ local function connectCloseHandler(button)
 end
 
 -- BUTTONS: safety checks sebelum connect
--- Function to populate carry options dynamically
--- Function to populate carry options dynamically
-local function populateCarryOptions(targetPlayer)
-	print("[AvatarMenu] populateCarryOptions called for", targetPlayer.Name)
-	-- Clear old buttons
-	for _, child in ipairs(carryOptionsSection:GetChildren()) do
-		if child:IsA("GuiButton") then
-			child:Destroy()
-		end
-	end
-
-	local CarryChoicesFolder = game:GetService("ReplicatedStorage"):FindFirstChild("CarryReplic")
-	if CarryChoicesFolder then CarryChoicesFolder = CarryChoicesFolder:FindFirstChild("CarryChoices") end
-	
-	if not CarryChoicesFolder then 
-		warn("[AvatarMenu] CarryChoicesFolder NOT FOUND!")
-		return 
-	end
-
-	local childrenCount = #CarryChoicesFolder:GetChildren()
-	print("[AvatarMenu] Found CarryChoicesFolder with", childrenCount, "choices")
-
-	local backButton = Instance.new("TextButton")
-	backButton.Size = UDim2.new(0.9, 0, 0, 40)
-	backButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-	backButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-	backButton.Font = Enum.Font.GothamBold
-	backButton.TextSize = 16
-	backButton.Text = "← Back"
-	backButton.LayoutOrder = 0
-	backButton.ZIndex = 101
-	local corner = Instance.new("UICorner", backButton)
-	corner.CornerRadius = UDim.new(0, 8)
-	backButton.Parent = carryOptionsSection
-
-	backButton.MouseButton1Click:Connect(function()
-		hideCarryOverlay()
-	end)
-
-	local order = 1
-	for _, choice in ipairs(CarryChoicesFolder:GetChildren()) do
-		local btn = Instance.new("TextButton")
-		btn.Size = UDim2.new(0.9, 0, 0, 40)
-		btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-		btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-		btn.Font = Enum.Font.GothamSemibold
-		btn.TextSize = 16
-		btn.Text = choice.Name
-		btn.LayoutOrder = order
-		btn.ZIndex = 101
-		local btnCorner = Instance.new("UICorner", btn)
-		btnCorner.CornerRadius = UDim.new(0, 8)
-		btn.Parent = carryOptionsSection
-
-		btn.MouseButton1Click:Connect(function()
-			local CarryReplic = game:GetService("ReplicatedStorage"):WaitForChild("CarryReplic")
-			local CarryRemotes = CarryReplic:WaitForChild("CarryRemotes")
-			local CarryRemote = CarryRemotes:WaitForChild("CarryRemote")
-			CarryRemote:FireServer("RequestCarry", targetPlayer, choice.Name)
-			
-			if type(closeAvatarMenu) == "function" then
-				closeAvatarMenu()
-			else
-				warn("closeAvatarMenu is nil in Carry choice! Forcing close.")
-				mainFrame.Visible = false
-				mainFrame.Position = defaultPos
-			end
-		end)
-		order = order + 1
-	end
-end
-
 if syncButton and syncButton:IsA("GuiButton") then
 	syncButton.Visible = true
 	syncButton.MouseButton1Click:Connect(function()
-		print("[AvatarMenu] Carry button clicked!")
+		print("[AvatarMenu] Carry button clicked! Firing CarrySelectSignal.")
 		if selectedPlayer then
-			populateCarryOptions(selectedPlayer)
-			showCarryOverlay()
-			print("[AvatarMenu] carryOptionsSection shown. Visible:", carryOptionsSection.Visible, "Parent:", carryOptionsSection.Parent.Name, "Size:", carryOptionsSection.Size, "ZIndex:", carryOptionsSection.ZIndex)
+			carrySelectSignal:Fire(selectedPlayer)
+			closeAvatarMenu()
 		end
 	end)
 else
 	warn("CarryButton not found; carry feature disabled.")
 end
 
-if giftButton and giftButton:IsA("GuiButton") then
-	giftButton.Visible = true
-	giftButton.MouseButton1Click:Connect(function()
-		if selectedPlayer then
-			local shopGui = playerGui:FindFirstChild("Shop")
-			if shopGui then
-				local toggle = shopGui:FindFirstChild("ToggleEvent")
-				if toggle then
-					toggle:Fire(true, selectedPlayer.UserId)
-					if type(closeAvatarMenu) == "function" then
-						closeAvatarMenu()
-					else
-						warn("closeAvatarMenu is nil in Gift callback! Forcing close.")
-						mainFrame.Visible = false
-						mainFrame.Position = defaultPos
-					end
-				end
-			end
-		end
-	end)
-else
-	warn("GiftButton not found; gifting feature disabled.")
-end
 
 if chatButton and chatButton:IsA("GuiButton") then
 	local function openPrivateChatToTarget(targetPlayer)

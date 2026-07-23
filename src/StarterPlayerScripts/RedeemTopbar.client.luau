@@ -152,24 +152,29 @@ end)
 -- Tidak ada overlay klik luar lagi
 
 -- ============================================================
--- LISTENER UNTUK MAIN MENU
+-- TOPBARPLUS ICON
 -- ============================================================
-local toggleEvent = ReplicatedStorage:FindFirstChild("ToggleRedeemGUI")
-if not toggleEvent then
-	toggleEvent = Instance.new("BindableEvent")
-	toggleEvent.Name = "ToggleRedeemGUI"
-	toggleEvent.Parent = ReplicatedStorage
-end
+local Icon = require(ReplicatedStorage:WaitForChild("TopbarPlus"):WaitForChild("Icon"))
 
-toggleEvent.Event:Connect(function(state)
-	if state == true then
+local redeemIcon = Icon.new()
+	:setRight() -- Di sebelah kanan agar tidak nabrak menu kiri
+	:setImage("rbxthumb://type=Asset&id=89996216566721&w=150&h=150") -- Icon kado
+	:modifyTheme({"IconImageScale", "Value", 0.9, "Deselected"})
+	:modifyTheme({"IconImageScale", "Value", 0.9, "Selected"})
+	:bindEvent("selected", function()
 		openGUI()
-	elseif state == false then
+	end)
+	:bindEvent("deselected", function()
 		closeGUI()
+	end)
+
+-- Sinkronisasi agar icon mengikuti state GUI (misal ditutup lewat tombol X)
+MainContainerFrame:GetPropertyChangedSignal("Visible"):Connect(function()
+	if MainContainerFrame.Visible then
+		redeemIcon:select()
 	else
-		-- Toggle
-		if isOpen then closeGUI() else openGUI() end
+		redeemIcon:deselect()
 	end
 end)
 
-print("[RedeemTopbar] Berhasil memuat GUI Redeem (terhubung ke MainMenu)!")
+print("[RedeemTopbar] Berhasil memuat GUI Redeem dan Topbar Icon!")

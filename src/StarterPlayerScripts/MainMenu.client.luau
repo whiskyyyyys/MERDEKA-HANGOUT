@@ -20,7 +20,6 @@ local MENU_ITEMS = {
 	{ imageId = "rbxassetid://116819039824541", action = "Shop"      }, -- shopping cart
 	{ imageId = "rbxassetid://71915733910221", action = "Dance"     }, -- figure
 	{ imageId = "rbxassetid://135488198321663", action = "Server"    }, -- globe
-	{ imageId = "rbxassetid://89996216566721", action = "Redeem"    }, -- GANTI ID ICON REDEEM (KADO)
 }
 
 local GUI_MAP = {
@@ -134,9 +133,6 @@ for _, item in ipairs(MENU_ITEMS) do
 				local toggle = shopGui:FindFirstChild("ToggleEvent")
 				if toggle then toggle:Fire(true) end
 			end
-		elseif item.action == "Redeem" then
-			local toggle = ReplicatedStorage:FindFirstChild("ToggleRedeemGUI")
-			if toggle then toggle:Fire(true) end
 		elseif item.action == "Dance" then
 			local danceMain = require(game:GetService("ReplicatedStorage"):WaitForChild("DanceMenuManager"):WaitForChild("DanceMain"))
 			if danceMain and danceMain.toggleMenu then
@@ -177,9 +173,6 @@ for _, item in ipairs(MENU_ITEMS) do
 				local toggle = shopGui:FindFirstChild("ToggleEvent")
 				if toggle then toggle:Fire(false) end
 			end
-		elseif item.action == "Redeem" then
-			local toggle = ReplicatedStorage:FindFirstChild("ToggleRedeemGUI")
-			if toggle then toggle:Fire(false) end
 		elseif item.action == "Dance" then
 			local danceMain = require(game:GetService("ReplicatedStorage"):WaitForChild("DanceMenuManager"):WaitForChild("DanceMain"))
 			if danceMain and danceMain.toggleMenu then

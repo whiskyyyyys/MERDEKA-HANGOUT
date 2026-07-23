@@ -67,7 +67,10 @@ end
 
 -- Label Title (opsional) untuk menunjukkan kalau ini Gift
 local titleLabel = frame:FindFirstChild("Title") or frame:FindFirstChild("Header")
-local originalTitleText = titleLabel and titleLabel.Text or "Shop"
+local originalTitleText = "Shop"
+if titleLabel and titleLabel:IsA("TextLabel") then
+	originalTitleText = titleLabel.Text
+end
 
 -- Logika Pembelian
 local buyRemote = ReplicatedStorage:WaitForChild("BuyShopItem", 5)
@@ -117,7 +120,7 @@ end
 local function updateOwnedStatus()
 	if not checkRemote then return end
 	
-	if titleLabel then
+	if titleLabel and titleLabel:IsA("TextLabel") then
 		if currentGiftTarget then
 			titleLabel.Text = "Gift Item"
 		else
