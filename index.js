@@ -193,20 +193,18 @@ client.on('messageCreate', async (message) => {
                 return message.reply("⛔ Tidak dapat menemukan channel dengan ID tersebut. Pastikan bot ada di server yang sama dan memiliki izin 'View Channel' & 'Send Messages'.");
             }
             
-            const updateMessage = `**Game Update v1.2.0 (#21)**\n> *The latest update is live. Read below for the specific changes*\n\n` +
+            const updateMessage = `**Game Update v1.3.0 (#23)**\n> *Pembaruan besar-besaran telah rilis! Baca detail lengkap perubahannya di bawah ini:*\n\n` +
                                   `✦ **Additions**\n\`\`\`diff\n` +
-                                  `+ Added a brand new "Carry Player" feature with full animations (Bridal, Hug, Piggyback)!\n` +
-                                  `+ Implemented a new Gift System: you can now gift Shop Items to other players using MHCoin.\n` +
-                                  `+ New Redeem Code System: added working redeem codes to claim free rewards.\n` +
-                                  `+ Minigames Update: added new minigames map features and mechanics.\n\`\`\`\n\n` +
+                                  `+ [FITUR BARU] Auto-Resume AFK Reconnect: Memancing tidak pernah semudah ini! Jika kamu mengaktifkan Auto Fishing lalu terputus atau ter-kick karena AFK, saat kamu reconnect, karaktermu akan otomatis memegang pancingan dan lanjut memancing di posisi terakhirmu!\n\`\`\`\n\n` +
                                   `⇄ **Changes**\n\`\`\`md\n` +
-                                  `# Avatar Context Menu has been fully redesigned to support dynamic options.\n` +
-                                  `# Shop MHCoin logic has been overhauled to support secure gifting and remote purchases.\n` +
-                                  `# Improved general UI layouts for a smoother player experience.\n\`\`\`\n\n` +
+                                  `# Perombakan Visual Ikan: Selamat tinggal kotak biru neon! Kini, ikan tangkapan yang melompat dari air murni berupa wujud gambar 2D aslinya, memberikan nuansa elegan layaknya game simulator premium.\n` +
+                                  `# Penyesuaian Jeda Auto-Catch: Mode penarikan ikan otomatis yang sebelumnya terlihat kaku dan instan, kini diubah menjadi jauh lebih natural dengan jeda acak (2 hingga 4 detik).\n` +
+                                  `# Pembaruan GUI Carry: Menu pemilihan Carry telah dirombak total! Menu kini muncul dengan mulus di sisi kanan layar, ukuran teks diperbesar, dan sepenuhnya responsif untuk SEMUA perangkat (Mobile, Tablet, PC).\n` +
+                                  `# Peningkatan Sistem Spin: Sistem Spin Wheel (Roda Keberuntungan) telah dioptimalkan untuk memastikan proses putaran lebih mulus dan pembagian hadiah lebih stabil.\n\`\`\`\n\n` +
                                   `▲ **Fixes**\n\`\`\`md\n` +
-                                  `# Fixed a major bug where Avatar Context Menu buttons (Gift, Carry) wouldn't appear correctly.\n` +
-                                  `# Fixed the UI layout bug where carry selection options were hidden under the menu background.\n` +
-                                  `# Fixed an issue where the menu couldn't be closed after an action was performed.\n\`\`\``;
+                                  `# Memperbaiki bug kritis di mana tombol 'Auto Fishing' menghilang secara permanen setelah jendela notifikasi tangkapan ikan tertutup.\n` +
+                                  `# Memperbaiki error merah (TweenService) pada animasi tangkapan jika ikan tidak memiliki gambar Icon.\n` +
+                                  `# Memperbaiki bug duplikasi opsi pada menu Carry yang membuat tombol pilihan muncul berkali-kali.\n\`\`\``;
                                   
             try {
                 await channel.send(updateMessage);
