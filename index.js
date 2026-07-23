@@ -60,23 +60,50 @@ client.on('clientReady', async () => {
         try {
             const channel = await client.channels.fetch(channelId);
             if (channel) {
-                const updateMessage = `📢 **UPDATE LOG TERBARU - MERDEKA HANGOUT** 📢\n\n` +
-                                      `Halo semuanya! Kami baru saja merilis pembaruan seru untuk sistem Minigames kita!\n\n` +
-                                      `🎮 **1. Jawab Kata (Trivia)**\n` +
-                                      `- Minigame adu cepat menjawab (Jawab Kata) sekarang sudah online!\n` +
-                                      `- Bersainglah dengan pemain lain untuk menjadi yang paling cepat dan pintar.\n\n` +
-                                      `🔠 **2. Sambung Kata**\n` +
-                                      `- Perbaikan sistem UI papan (Board Display) Sambung Kata.\n` +
-                                      `- Kestabilan permainan ditingkatkan agar lebih mulus saat dimainkan beramai-ramai.\n\n` +
-                                      `💪 **3. Tarik Tambang**\n` +
-                                      `- Minigame klasik 17 Agustusan kini siap dimainkan!\n` +
-                                      `- Fitur meteran kekuatan dan animasi keren untuk mengalahkan lawan.\n\n` +
-                                      `*Terima kasih telah bermain, nantikan minigame seru lainnya (Balap Karung menyusul)!* 🎉`;
+                const updateMessage = `**Game Update v1.2.0 (#21)**\n> *The latest update is live. Read below for the specific changes*\n\n` +
+                                      `✦ **Additions**\n\`\`\`diff\n` +
+                                      `+ Added a brand new "Carry Player" feature with full animations (Bridal, Hug, Piggyback)!\n` +
+                                      `+ Implemented a new Gift System: you can now gift Shop Items to other players using MHCoin.\n` +
+                                      `+ New Redeem Code System: added working redeem codes to claim free rewards.\n` +
+                                      `+ Minigames Update: added new minigames map features and mechanics.\n\`\`\`\n\n` +
+                                      `⇄ **Changes**\n\`\`\`md\n` +
+                                      `# Avatar Context Menu has been fully redesigned to support dynamic options.\n` +
+                                      `# Shop MHCoin logic has been overhauled to support secure gifting and remote purchases.\n` +
+                                      `# Improved general UI layouts for a smoother player experience.\n\`\`\`\n\n` +
+                                      `▲ **Fixes**\n\`\`\`md\n` +
+                                      `# Fixed a major bug where Avatar Context Menu buttons (Gift, Carry) wouldn't appear correctly.\n` +
+                                      `# Fixed the UI layout bug where carry selection options were hidden under the menu background.\n` +
+                                      `# Fixed an issue where the menu couldn't be closed after an action was performed.\n\`\`\``;
                 await channel.send(updateMessage);
-                console.log("Berhasil mengirim auto-update log ke channel.");
+                console.log("Berhasil mengirim auto-update log ke channel public.");
             }
         } catch (e) {
-            console.log("Gagal mengirim auto-update log:", e.message);
+            console.log("Gagal mengirim auto-update log public:", e.message);
+        }
+    }
+
+    // Auto-send Staff Update Log
+    const staffChannelId = process.env.STAFF_LOG_CHANNEL_ID;
+    if (staffChannelId && process.env.AUTO_SEND_LOG === 'true') {
+        try {
+            const staffChannel = await client.channels.fetch(staffChannelId);
+            if (staffChannel) {
+                const staffUpdateMessage = `**Staff Command & System Update**\n> *New administrative commands and system limits have been implemented for moderation.*\n\n` +
+                                           `✦ **New Commands & Features**\n\`\`\`diff\n` +
+                                           `+ /kick [player] - Kick a player from the server.\n` +
+                                           `+ /ban [player] [duration] - Temporarily ban a player with a set duration.\n` +
+                                           `+ /unban [player] - Remove a ban from a player.\n` +
+                                           `+ /kill [player] - Instantly eliminate a target player.\n` +
+                                           `+ /tp [player] - Teleport directly to a specific player.\n\`\`\`\n\n` +
+                                           `⇄ **Changes & Limits**\n\`\`\`md\n` +
+                                           `# Redeem Code Limits: Codes can now be set with expiration dates and maximum usage limits.\n` +
+                                           `# Code Validation: Added strict validation to prevent code abuse or double claiming.\n` +
+                                           `# Shop Restrictions: Gifting system is now strictly verified via Server Scripts to prevent exploiters.\n\`\`\``;
+                await staffChannel.send(staffUpdateMessage);
+                console.log("Berhasil mengirim auto-update log ke channel staff.");
+            }
+        } catch (e) {
+            console.log("Gagal mengirim auto-update log staff:", e.message);
         }
     }
 });
