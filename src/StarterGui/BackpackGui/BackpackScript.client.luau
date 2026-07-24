@@ -113,9 +113,61 @@ local function TouchScreenChanged()
 end
 
 UserInputService:GetPropertyChangedSignal("KeyboardEnabled"):Connect(KeyboardChanged)
-UserInputService:GetPropertyChangedSignal("TouchEnabled"):Connect(TouchScreenChanged)
-UserInputService:GetPropertyChangedSignal("MouseEnabled"):Connect(TouchScreenChanged)
+-- INJECT FAVORITE BUTTON KE SLOT TEMPLATE
+local favBtn = Instance.new("TextButton")
+favBtn.Name = "FavoriteBtn"
+favBtn.Size = UDim2.new(0, 26, 0, 26)
+favBtn.Position = UDim2.new(1, -30, 0, 4)
+favBtn.BackgroundTransparency = 1
+favBtn.Text = "★"
+favBtn.TextScaled = true
+favBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
+favBtn.TextStrokeTransparency = 0.5
+favBtn.Font = Enum.Font.FredokaOne
+favBtn.ZIndex = 15
+favBtn.Visible = false -- Sembunyikan default (hanya muncul buat ikan)
+favBtn.Parent = SlotTemplate.Button
 
--- //
+local RemotesUtil = require(game:GetService("ReplicatedStorage"):WaitForChild("Modules"):WaitForChild("RemotesUtil"))
+local remotes = RemotesUtil.Get()
+
+BackpackManager.ToolAdded:Connect(function(tool, container)
+	if not tool:GetAttribute("Rarity") then return end
+	
+	task.defer(function()
+		task.wait(0.2)
+		if not container or not container.Parent then return end
+		
+		for _, btn in ipairs(container:GetDescendants()) do
+			if btn.Name == "FavoriteBtn" and not btn:GetAttribute("Setup") then
+				local toolNameLabel = btn.Parent:FindFirstChild("ToolName")
+				if toolNameLabel and toolNameLabel.Text == tool.Name then
+					btn:SetAttribute("Setup", true)
+					btn.Visible = true
+					
+					local function updateIcon()
+						if tool:GetAttribute("IsFavorited") then
+							btn.TextColor3 = Color3.fromRGB(255, 215, 0) -- Emas
+						else
+							btn.TextColor3 = Color3.fromRGB(150, 150, 150) -- Abu-abu
+						end
+					end
+					updateIcon()
+					
+					local conn = tool:GetAttributeChangedSignal("IsFavorited"):Connect(updateIcon)
+					btn.Destroying:Connect(function() conn:Disconnect() end)
+					
+					btn.Activated:Connect(function()
+						local newState = not tool:GetAttribute("IsFavorited")
+						tool:SetAttribute("IsFavorited", newState)
+						remotes.ToggleFavoriteFish:FireServer(tool, newState)
+					end)
+					
+					return -- Selesai mengikat tombol ini
+				end
+			end
+		end
+	end)
+end)
 
 BackpackManager.StartBackpack() -- :D

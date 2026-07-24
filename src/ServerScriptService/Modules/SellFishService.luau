@@ -50,6 +50,7 @@ function SellFishService.Init(remotes)
 		if character then
 			for _, child in character:GetChildren() do
 				if child:IsA("Tool") and child:GetAttribute("Rarity") and child:GetAttribute("WeightKg") then
+					if child:GetAttribute("IsFavorited") == true then continue end
 					table.insert(fishToSell, child)
 				end
 			end
@@ -59,6 +60,7 @@ function SellFishService.Init(remotes)
 		if backpack then
 			for _, child in backpack:GetChildren() do
 				if child:IsA("Tool") and child:GetAttribute("Rarity") and child:GetAttribute("WeightKg") then
+					if child:GetAttribute("IsFavorited") == true then continue end
 					table.insert(fishToSell, child)
 				end
 			end
@@ -104,6 +106,79 @@ function SellFishService.Init(remotes)
 	Players.PlayerRemoving:Connect(function(player)
 		lastSell[player] = nil
 	end)
+	
+	remotes.ToggleFavoriteFish.OnServerEvent:Connect(function(player, tool, isFavorited)
+		if typeof(tool) ~= "Instance" or not tool:IsA("Tool") then return end
+		if tool.Parent ~= player.Backpack and tool.Parent ~= player.Character then return end
+		if not tool:GetAttribute("Rarity") or not tool:GetAttribute("WeightKg") then return end
+		
+		tool:SetAttribute("IsFavorited", isFavorited == true)
+		
+		local fishName = tool.Name
+		local rarity = tool:GetAttribute("Rarity")
+		local weightKg = tool:GetAttribute("WeightKg")
+		local scaleFactor = tool:GetAttribute("SizeScale")
+		
+		PlayerDataService.SetFavorite(player, fishName, rarity, weightKg, scaleFactor, isFavorited == true)
+	end)
+end
+
+function SellFishService.AutoSellAll(player)
+	local character = player.Character
+	local backpack = player:FindFirstChild("Backpack")
+
+	local fishToSell = {}
+	
+	if character then
+		for _, child in character:GetChildren() do
+			if child:IsA("Tool") and child:GetAttribute("Rarity") and child:GetAttribute("WeightKg") then
+				if child:GetAttribute("IsFavorited") == true then continue end
+				table.insert(fishToSell, child)
+			end
+		end
+	end
+	
+	if backpack then
+		for _, child in backpack:GetChildren() do
+			if child:IsA("Tool") and child:GetAttribute("Rarity") and child:GetAttribute("WeightKg") then
+				if child:GetAttribute("IsFavorited") == true then continue end
+				table.insert(fishToSell, child)
+			end
+		end
+	end
+
+	if #fishToSell == 0 then return 0 end
+
+	local totalCash = 0
+	local fishNamesSold = {}
+
+	for _, tool in ipairs(fishToSell) do
+		local rarity = tool:GetAttribute("Rarity")
+		local weightKg = tool:GetAttribute("WeightKg")
+		local scaleFactor = tool:GetAttribute("SizeScale")
+		local fishName = tool.Name
+
+		local pricePerKg = FishConfig.SELL_PRICE_PER_KG[rarity]
+		if pricePerKg then
+			local finalPrice = math.floor((weightKg * pricePerKg) + 0.5)
+			totalCash += finalPrice
+			PlayerDataService.RemoveFish(player, fishName, rarity, weightKg, scaleFactor)
+			table.insert(fishNamesSold, fishName)
+			tool:Destroy()
+		end
+	end
+
+	if totalCash > 0 then
+		local addCashFunc = getAddCashFunction()
+		local ok = addCashFunc:Invoke(player, totalCash, "Auto-Sell " .. #fishNamesSold .. " ikan")
+		if ok then
+			pcall(function()
+				local remotes = require(ReplicatedStorage.Modules.RemotesUtil).Get()
+				remotes.SellFishResult:FireClient(player, true, totalCash, "Auto-Sell " .. #fishNamesSold .. " Ikan Penuh")
+			end)
+		end
+	end
+	return totalCash
 end
 
 return SellFishService

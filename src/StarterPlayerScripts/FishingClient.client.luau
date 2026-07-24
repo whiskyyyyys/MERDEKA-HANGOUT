@@ -49,32 +49,42 @@ local function setAutoFishingState(state)
 	AutoFishingRemote:FireServer(state)
 end
 
--- Logika Cek Akses Auto Fishing
 local GROUP_ID = 152660069
+-- MASUKKAN ROBLOX USER ID (BUKAN DISCORD ID), contoh: 123456789
 local adminIds = {1332452869001052215, 585682641777590288, 420925406137286656, 1056973095157649500, 1451601271613165783}
 
 local function hasAutoAccess()
+	-- SEMENTARA DIBUKA UNTUK SEMUA ORANG
+	return true
+	
+	--[[ LOGIKA LAMA (DISIMPAN JIKA MAU DIKEMBALIKAN NANTI):
 	-- 50 Jam = 3000 menit
 	local playTimeMins = player:GetAttribute("PlayTimeMinutes") or 0
 	if playTimeMins >= 3000 then return true end
 	
-	-- Admin check
+	-- Admin check by ROBLOX USER ID
 	for _, id in ipairs(adminIds) do
 		if player.UserId == id then return true end
 	end
 	
 	local isAuth = false
 	pcall(function()
-		local role = player:GetRoleInGroup(GROUP_ID)
-		if role and role ~= "Guest" then
-			local lowerRole = string.lower(role)
-			if lowerRole:match("owner") or lowerRole:match("founder") or lowerRole:match("ceo") or lowerRole:match("admin") or lowerRole:match("mod") or lowerRole:match("dev") then
-				isAuth = true
+		local rank = player:GetRankInGroup(GROUP_ID)
+		if rank >= 200 then
+			isAuth = true
+		else
+			local role = player:GetRoleInGroup(GROUP_ID)
+			if role and role ~= "Guest" then
+				local lowerRole = string.lower(role)
+				if lowerRole:match("owner") or lowerRole:match("founder") or lowerRole:match("ceo") or lowerRole:match("admin") or lowerRole:match("mod") or lowerRole:match("dev") then
+					isAuth = true
+				end
 			end
 		end
 	end)
 	
 	return isAuth
+	]]
 end
 
 if not hasAutoAccess() then

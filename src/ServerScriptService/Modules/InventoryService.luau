@@ -27,14 +27,74 @@ end
 local function scaleTool(tool, scaleFactor)
 	local handle = tool:FindFirstChild("Handle")
 	if not handle then return end
-	local pivot = handle:GetPivot()
-	for _, part in tool:GetDescendants() do
-		if part:IsA("BasePart") then
-			part.Size = part.Size * scaleFactor
+	
+	-- TempModel harus diparent ke Tool sebelum part dipindahkan agar Motor6D/Weld bawaan model tidak hancur!
+	local tempModel = Instance.new("Model")
+	tempModel.Parent = tool 
+	
+	local partsToMove = {}
+	for _, child in tool:GetChildren() do
+		if (child:IsA("BasePart") or child:IsA("Model")) and child ~= tempModel then
+			table.insert(partsToMove, child)
+			child.Parent = tempModel
 		end
 	end
-	if tool:FindFirstChildWhichIsA("Model") == nil then
-		handle.CFrame = pivot
+	
+	if #partsToMove > 0 then
+		-- Cek apakah Handle jauh dari ikan (sering terjadi jika player hanya memasukkan part Handle baru)
+		handle.Parent = nil -- Keluarkan sebentar agar bounding box hanya menghitung ikan
+		local cf, size = tempModel:GetBoundingBox()
+		handle.Parent = tempModel
+		
+		-- Jika handle melenceng lebih dari 2 stud dari pusat ikan, kita tarik handle ke tengah!
+		if (cf.Position - handle.Position).Magnitude > 2 then
+			-- Hancurkan semua weld manual yang mungkin dibuat oleh player agar ikan tidak ikut terseret saat handle digeser
+			for _, desc in tool:GetDescendants() do
+				if desc:IsA("JointInstance") or desc:IsA("WeldConstraint") then
+					if desc.Part0 == handle or desc.Part1 == handle then
+						desc:Destroy()
+					end
+				end
+			end
+			handle.CFrame = cf
+		end
+		
+		tempModel.PrimaryPart = handle
+		tempModel:ScaleTo(scaleFactor)
+		
+		for _, child in partsToMove do
+			child.Parent = tool
+		end
+	end
+	
+	tempModel:Destroy()
+end
+
+local function autoWeld(tool)
+	local handle = tool:FindFirstChild("Handle")
+	if not handle then return end
+	
+	-- Unanchor semua part agar physics bekerja dengan benar saat di-equip
+	for _, child in tool:GetChildren() do
+		if child:IsA("BasePart") then
+			child.Anchored = false
+			if child ~= handle then
+				child.CanCollide = false
+			end
+		end
+	end
+	handle.CanCollide = false
+	
+	-- Paksa weld semua part ke Handle. 
+	-- (Jangan gunakan GetRootPart() di sini karena physics engine tidak berjalan dengan akurat saat Tool belum masuk ke Workspace!)
+	for _, child in tool:GetChildren() do
+		if child:IsA("BasePart") and child ~= handle then
+			local weld = Instance.new("WeldConstraint")
+			weld.Name = "AutoWeld_" .. child.Name
+			weld.Part0 = handle
+			weld.Part1 = child
+			weld.Parent = handle
+		end
 	end
 end
 
@@ -90,16 +150,18 @@ end
 
 -- Buat instance Tool (scaled + billboard), TIDAK diparent kemanapun.
 -- Dipakai baik buat tangkapan baru MAUPUN restore dari DataStore (pakai weight/scale yang SAMA persis).
-function InventoryService.CreateFishTool(rarity, fishName, weightKg, scaleFactor)
+function InventoryService.CreateFishTool(rarity, fishName, weightKg, scaleFactor, isFavorited)
 	local template = InventoryService.GetFishTemplate(rarity, fishName)
 	if not template then return nil end
 
 	local clone = template:Clone()
 	clone.CanBeDropped = false
 	scaleTool(clone, scaleFactor)
+	autoWeld(clone)
 	clone:SetAttribute("WeightKg", weightKg)
 	clone:SetAttribute("SizeScale", scaleFactor)
 	clone:SetAttribute("Rarity", rarity)
+	clone:SetAttribute("IsFavorited", isFavorited == true)
 	addFishBillboard(clone, fishName, weightKg)
 
 	return clone
@@ -111,7 +173,7 @@ function InventoryService.GiveFish(player, rarity, fishName)
 	if not backpack then return false, nil, nil end
 
 	local weightKg, scaleFactor = InventoryService.RollWeightAndSize(rarity)
-	local clone = InventoryService.CreateFishTool(rarity, fishName, weightKg, scaleFactor)
+	local clone = InventoryService.CreateFishTool(rarity, fishName, weightKg, scaleFactor, false)
 	if not clone then return false, nil, nil end
 
 	clone.Parent = backpack
@@ -124,7 +186,7 @@ function InventoryService.RestoreInventory(player, savedInventory)
 	if not backpack then return end
 
 	for _, entry in savedInventory do
-		local clone = InventoryService.CreateFishTool(entry.rarity, entry.name, entry.weightKg, entry.scaleFactor)
+		local clone = InventoryService.CreateFishTool(entry.rarity, entry.name, entry.weightKg, entry.scaleFactor, entry.isFavorited)
 		if clone then
 			clone.Parent = backpack
 		end

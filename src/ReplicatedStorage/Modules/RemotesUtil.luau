@@ -15,6 +15,11 @@ local EVENT_NAMES = {
 	"SkinRodDataRequest",
 	"SkinRodDataResponse",
 	"RequestCharacterRefresh",
+	"ToggleFavoriteFish",
+	"PetDataRequest",
+	"PetDataResponse",
+	"PetEquip",
+	"PetPurchased"
 }
 
 function RemotesUtil.Get()

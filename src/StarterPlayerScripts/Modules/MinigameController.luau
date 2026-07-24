@@ -24,6 +24,11 @@ function MinigameController.new(gui)
 	}
 	self.catchButton = barFrame:WaitForChild("CatchButton")
 	self.autoButton = mainFish:WaitForChild("Auto")
+	
+	-- FIX LAYAR HP: Paksa AnchorPoint dan Position menggunakan Scale agar tidak lari saat orientasi berubah
+	self.autoButton.AnchorPoint = Vector2.new(0.5, 1)
+	self.autoButton.Position = UDim2.new(0.5, 0, 0.85, 0)
+	
 	self.autoText = self.autoButton:WaitForChild("Text", 5)
 	
 	self.catchProgressFrame = catchProgress

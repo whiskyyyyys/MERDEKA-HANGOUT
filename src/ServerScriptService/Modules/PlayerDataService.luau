@@ -36,6 +36,8 @@ local function defaultData()
 		Inventory = {},
 		OwnedSkins = {"RodDefault"},
 		EquippedSkin = "RodDefault",
+		OwnedPets = {},
+		EquippedPet = "",
 		ActiveSession = nil,
 	}
 end
@@ -54,6 +56,7 @@ local function sanitizeData(raw)
 				and typeof(entry.rarity) == "string"
 				and typeof(entry.weightKg) == "number"
 				and typeof(entry.scaleFactor) == "number"
+				and (typeof(entry.isFavorited) == "boolean" or entry.isFavorited == nil)
 				and entry.weightKg > 0 and entry.weightKg < 1000
 				and entry.scaleFactor > 0 and entry.scaleFactor < 20
 			then
@@ -63,6 +66,7 @@ local function sanitizeData(raw)
 						rarity = entry.rarity,
 						weightKg = entry.weightKg,
 						scaleFactor = entry.scaleFactor,
+						isFavorited = entry.isFavorited == true,
 					})
 				end
 			end
@@ -84,6 +88,20 @@ local function sanitizeData(raw)
 
 	if typeof(raw.EquippedSkin) == "string" then
 		clean.EquippedSkin = raw.EquippedSkin
+	end
+
+	if typeof(raw.OwnedPets) == "table" then
+		local ownedPets = {}
+		for _, petName in raw.OwnedPets do
+			if typeof(petName) == "string" then
+				table.insert(ownedPets, petName)
+			end
+		end
+		clean.OwnedPets = ownedPets
+	end
+
+	if typeof(raw.EquippedPet) == "string" then
+		clean.EquippedPet = raw.EquippedPet
 	end
 
 	if typeof(raw.ActiveSession) == "table" then
@@ -212,6 +230,7 @@ function PlayerDataService.AddFish(player, fishName, rarity, weightKg, scaleFact
 		rarity = rarity,
 		weightKg = weightKg,
 		scaleFactor = scaleFactor,
+		isFavorited = false,
 	})
 
 	profile.Dirty = true
@@ -230,6 +249,25 @@ function PlayerDataService.RemoveFish(player, fishName, rarity, weightKg, scaleF
 			and math.abs(entry.scaleFactor - scaleFactor) < 0.001
 		then
 			table.remove(profile.Data.Inventory, i)
+			profile.Dirty = true
+			scheduleQuickSave(player)
+			return true
+		end
+	end
+	return false
+end
+
+function PlayerDataService.SetFavorite(player, fishName, rarity, weightKg, scaleFactor, isFavorited)
+	local profile = profiles[player]
+	if not profile then return false end
+
+	for _, entry in profile.Data.Inventory do
+		if entry.name == fishName
+			and entry.rarity == rarity
+			and math.abs(entry.weightKg - weightKg) < 0.001
+			and math.abs(entry.scaleFactor - scaleFactor) < 0.001
+		then
+			entry.isFavorited = isFavorited == true
 			profile.Dirty = true
 			scheduleQuickSave(player)
 			return true
@@ -276,6 +314,50 @@ function PlayerDataService.SetEquippedSkin(player, skinName)
 	local profile = profiles[player]
 	if not profile then return false end
 	profile.Data.EquippedSkin = skinName
+	profile.Dirty = true
+	scheduleQuickSave(player)
+	return true
+end
+
+-- ===== Pets =====
+
+function PlayerDataService.GetOwnedPets(player)
+	local profile = profiles[player]
+	if not profile then return {} end
+	return deepCopy(profile.Data.OwnedPets or {})
+end
+
+function PlayerDataService.IsPetOwned(player, petName)
+	local profile = profiles[player]
+	if not profile then return false end
+	for _, owned in (profile.Data.OwnedPets or {}) do
+		if owned == petName then return true end
+	end
+	return false
+end
+
+function PlayerDataService.AddOwnedPet(player, petName)
+	local profile = profiles[player]
+	if not profile then return false end
+	if PlayerDataService.IsPetOwned(player, petName) then return true end
+
+	if not profile.Data.OwnedPets then profile.Data.OwnedPets = {} end
+	table.insert(profile.Data.OwnedPets, petName)
+	profile.Dirty = true
+	scheduleQuickSave(player)
+	return true
+end
+
+function PlayerDataService.GetEquippedPet(player)
+	local profile = profiles[player]
+	if not profile then return "" end
+	return profile.Data.EquippedPet or ""
+end
+
+function PlayerDataService.SetEquippedPet(player, petName)
+	local profile = profiles[player]
+	if not profile then return false end
+	profile.Data.EquippedPet = petName
 	profile.Dirty = true
 	scheduleQuickSave(player)
 	return true

@@ -45,7 +45,7 @@ FishConfig.FISH_BY_RARITY = {
 	Epic = {"MagmaShark", "MambaFish", "NeonFish"},
 	Legendary = {"Turtle"},
 	Mythic = {"MantraBrown", "MantraRay", "MantraRed"},
-	Secret = {"FishJerry", "FishNaomi"},
+	Secret = {"FishJerry", "FishNaomi", "FishShasa"},
 }
 
 FishConfig.RARITY_SIZE_RANGE = {

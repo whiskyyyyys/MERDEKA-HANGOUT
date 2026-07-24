@@ -60,6 +60,23 @@ end
 
 -- GUI elements (support GUI baru + fallback legacy)
 local contentScroll = mainFrame:FindFirstChild("ScrollingFrame") or mainFrame:WaitForChild("ScrollingFrame", 5)
+if contentScroll and contentScroll:IsA("ScrollingFrame") then
+	contentScroll.Active = true
+	contentScroll.ScrollingEnabled = true
+	contentScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+	contentScroll.CanvasSize = UDim2.new(1, 0, 0, 0) -- Biarkan AutomaticSize yang mengatur Y
+	
+	if contentScroll.ScrollBarThickness == 0 then
+		contentScroll.ScrollBarThickness = 8
+	end
+	
+	-- Pancing update UI untuk mobile
+	task.delay(0.5, function()
+		if contentScroll.AbsoluteCanvasSize.Y <= contentScroll.AbsoluteWindowSize.Y then
+			contentScroll.CanvasSize = UDim2.new(1, 0, 0, contentScroll.AbsoluteWindowSize.Y + 150)
+		end
+	end)
+end
 local avatarSection = contentScroll and (contentScroll:FindFirstChild("aAvatar") or contentScroll:WaitForChild("aAvatar", 5))
 local buttonsSection = contentScroll and (contentScroll:FindFirstChild("bButtons") or contentScroll:WaitForChild("bButtons", 5))
 

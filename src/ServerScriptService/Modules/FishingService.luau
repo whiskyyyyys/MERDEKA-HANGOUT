@@ -6,6 +6,7 @@ local FishConfig = require(ReplicatedStorage.Modules.FishConfig)
 local InventoryService = require(ServerScriptService.Modules.InventoryService)
 local PlayerDataService = require(ServerScriptService.Modules.PlayerDataService)
 local FishingLineService = require(ServerScriptService.Modules.FishingLineService)
+local SellFishService = require(ServerScriptService.Modules.SellFishService)
 
 local FishingService = {}
 
@@ -153,6 +154,14 @@ function FishingService.Init(remotes)
 		local success, weightKg, scaleFactor = InventoryService.GiveFish(player, rarity, fishName)
 		if success then
 			PlayerDataService.AddFish(player, fishName, rarity, weightKg, scaleFactor)
+			
+			-- OPTIMASI AFK: Auto-Sell jika inventaris mulai penuh (mencegah lag karena kebanyakan Tool di Backpack)
+			local inventory = PlayerDataService.GetInventory(player)
+			if #inventory >= 100 then
+				task.spawn(function()
+					SellFishService.AutoSellAll(player)
+				end)
+			end
 		end
 
 		remotes.FishCaught:FireClient(player, {
