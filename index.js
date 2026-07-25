@@ -60,17 +60,17 @@ client.on('clientReady', async () => {
         try {
             const channel = await client.channels.fetch(channelId);
             if (channel) {
-                const updateMessage = `**Game Update v1.5.0 (#25)**\n> *Pembaruan besar-besaran & Optimalisasi Sistem telah rilis! Baca detail lengkap perubahannya di bawah ini:*\n\n` +
+                const updateMessage = `**Game Update v1.6.0 (#26)**\n> *Pembaruan besar-besaran & Optimalisasi Sistem telah rilis! Baca detail lengkap perubahannya di bawah ini:*\n\n` +
                                       `✦ **Additions / Enhancements**\n\`\`\`diff\n` +
-                                      `+ [UI ANIMATION] Aesthetic Menus: Menu Skin Rod sekarang dilengkapi animasi drop-down yang sangat mulus dari langit saat dibuka dan meluncur saat ditutup.\n` +
-                                      `+ [UI ANIMATION] Interactive Buttons: Tombol silang (Close) pada toko MHCoin, Cash Shop, dan Game Rules sekarang memiliki efek membesar (hover scale) interaktif!\n` +
-                                      `+ [SYSTEM] Advanced Spin Detection: Spin Machine kini mampu mendeteksi keberadaan mesin yang baru dimuat di arena manapun secara cerdas (Dynamic Loading Loop).\n\`\`\`\n\n` +
-                                      `⇄ **Changes**\n\`\`\`md\n` +
-                                      `# Focus Mode: Ketika kamu masuk ke zona Spin, semua UI lain (seperti inventory, dll) di layar akan otomatis disembunyikan agar kamu bisa fokus 100% pada roda Spin!\n` +
-                                      `# Presisi Sistem Inventory: Sistem penyimpanan ikan ke database direstrukturisasi dengan injeksi UUID 100% akurat. Tidak ada lagi sistem perbandingan desimal yang usang.\n\`\`\`\n\n` +
+                                      `+ [NEW COMMAND] Wear Accessory: Admin kini bisa memberikan aksesoris (baju klasik, celana, atau 3D aksesoris) berdasarkan ID ke player tertentu atau semua player melalui Cmdr!\n` +
+                                      `+ [UI TWEAK] Redeem Code: Memindahkan UI tombol Redeem Code di Topbar ke sebelah kiri agar lebih rapi dan tidak bertumpuk.\n\`\`\`\n\n` +
                                       `▲ **Fixes**\n\`\`\`md\n` +
-                                      `# [CRITICAL FIX] Memperbaiki bug kritis di mana ikan yang sudah di-Favorite (Bintang Emas) tiba-tiba kehilangan statusnya saat player Rejoin karena masalah presisi desimal DataStore.\n` +
-                                      `# Memperbaiki masalah Spin GUI yang gagal muncul di Arena 2 dan 3 karena skrip membaca tiang secara statis alih-alih melakukan scanning ke seluruh map terdekat.\n\`\`\``;
+                                      `# [CRITICAL FIX] Memperbaiki bug di mana tombol 'Auto' Fishing dan menu Carry (Pilihan Gendong & Tombol Drop) hilang/tidak berfungsi saat pemain mati (Respawn).\n` +
+                                      `# [CRITICAL FIX] Memperbaiki bug pemain nyangkut (stuck) tidak bisa bergerak saat menekan tombol 'Keluar/Leave' di dalam zona minigame (PadZone).\n` +
+                                      `# Memperbaiki Sistem Refresh Karakter yang sebelumnya membunuh pemain saat mengganti body bundle; kini refresh seluruh badan berjalan mulus tanpa mematikan karakter!\n` +
+                                      `# Memperbaiki orientasi beberapa Pet Eksklusif yang sebelumnya menghadap terbalik (backward/upside down).\n` +
+                                      `# Memperbaiki Title Pemain yang seringkali hilang dan tidak terlihat oleh pemain lain setelah respawn.\n` +
+                                      `# Memperbaiki Leaderboard & Podium Minigame (Masukan Paku, Last Standing, Tangkap Ayam) yang sebelumnya gagal memunculkan nama pemenang.\n\`\`\``;
                 await channel.send(updateMessage);
                 console.log("Berhasil mengirim auto-update log ke channel public.");
             }
