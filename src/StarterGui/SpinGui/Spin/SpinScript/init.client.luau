@@ -11,7 +11,8 @@ local SpinWheelEvent = ReplicatedStorage:WaitForChild("SpinWheelEvent")
 
 local Player = Players.LocalPlayer
 local PlayerStats = Player:WaitForChild("PlayerStats")
-local SpinStats = PlayerStats:WaitForChild("Spin")
+local StatsData = Player:WaitForChild("StatsData")
+local SpinStats = StatsData:WaitForChild("Spins")
 local SpinTime = PlayerStats:WaitForChild("SpinTime")
 
 local function saniyeDakikaSaniyeCevirString(saniye)

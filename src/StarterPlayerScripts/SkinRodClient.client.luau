@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -30,14 +31,29 @@ card1Template.Visible = false
 
 local currentCards = {}
 
+local defaultPos = skinsRodFrame.Position
+local hiddenPos = UDim2.new(defaultPos.X.Scale, defaultPos.X.Offset, -0.5, 0)
+skinsRodFrame.Position = hiddenPos
 skinsRodFrame.Visible = false
 
+local isMenuOpen = false
+
 local function openSkinFrame()
+	if isMenuOpen then return end
+	isMenuOpen = true
 	skinsRodFrame.Visible = true
 	remotes.SkinRodDataRequest:FireServer()
+	
+	TweenService:Create(skinsRodFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = defaultPos}):Play()
 end
 
 local function closeSkinFrame()
+	if not isMenuOpen then return end
+	isMenuOpen = false
+	
+	local t = TweenService:Create(skinsRodFrame, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Position = hiddenPos})
+	t:Play()
+	t.Completed:Wait()
 	skinsRodFrame.Visible = false
 end
 
@@ -47,6 +63,14 @@ else
 	warn("[SkinRodClient] Tombol buka (ButtonFrame > Button) tidak ditemukan di dalam ScreenGui SkinRod")
 end
 
+-- Hover animation untuk close button
+local defaultCloseSize = closeButton.Size
+closeButton.MouseEnter:Connect(function()
+	TweenService:Create(closeButton, TweenInfo.new(0.2), {Size = UDim2.new(defaultCloseSize.X.Scale * 1.1, defaultCloseSize.X.Offset * 1.1, defaultCloseSize.Y.Scale * 1.1, defaultCloseSize.Y.Offset * 1.1)}):Play()
+end)
+closeButton.MouseLeave:Connect(function()
+	TweenService:Create(closeButton, TweenInfo.new(0.2), {Size = defaultCloseSize}):Play()
+end)
 closeButton.Activated:Connect(closeSkinFrame)
 
 local function clearCards()

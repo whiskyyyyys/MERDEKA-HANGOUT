@@ -122,7 +122,19 @@ local function hideGameRules()
 	end)
 end
 
-closeButton.MouseButton1Click:Connect(hideGameRules)
+local closeBtnScale = closeButton:FindFirstChildOfClass("UIScale") or Instance.new("UIScale")
+closeBtnScale.Parent = closeButton
 
+closeButton.MouseEnter:Connect(function()
+	TweenService:Create(closeBtnScale, TweenInfo.new(0.2), {Scale = 1.1}):Play()
+end)
+closeButton.MouseLeave:Connect(function()
+	TweenService:Create(closeBtnScale, TweenInfo.new(0.2), {Scale = 1}):Play()
+end)
+
+closeButton.MouseButton1Click:Connect(function()
+	TweenService:Create(closeBtnScale, TweenInfo.new(0.1), {Scale = 1}):Play()
+	hideGameRules()
+end)
 task.wait(Config.InitialDelay)
 showGameRules()

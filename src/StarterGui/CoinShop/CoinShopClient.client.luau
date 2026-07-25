@@ -149,7 +149,20 @@ gui:GetPropertyChangedSignal("Enabled"):Connect(updateBlur)
 -- ==========================================
 
 -- 1. Fungsikan tombol Close
+local uiScale = closeBtn:FindFirstChildOfClass("UIScale") or Instance.new("UIScale")
+uiScale.Parent = closeBtn
+
+closeBtn.MouseEnter:Connect(function()
+	TweenService:Create(uiScale, TweenInfo.new(0.2), {Scale = 1.1}):Play()
+end)
+closeBtn.MouseLeave:Connect(function()
+	TweenService:Create(uiScale, TweenInfo.new(0.2), {Scale = 1}):Play()
+end)
+
 closeBtn.Activated:Connect(function()
+	-- Kembalikan ukuran asli kalau ditekan
+	TweenService:Create(uiScale, TweenInfo.new(0.1), {Scale = 1}):Play()
+	
 	local hideTween = TweenService:Create(frameScale, tweenInfoHide, {Scale = 0})
 	hideTween:Play()
 	task.delay(0.3, function()

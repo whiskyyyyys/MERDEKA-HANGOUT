@@ -5,7 +5,7 @@ local RunService = game:GetService("RunService")
 
 local PlayerDataService = {}
 
-local DATA_VERSION = 2
+local DATA_VERSION = 3 -- Versi 3: Tambah UUID ke ikan
 local mainStore = DataStoreService:GetDataStore("FishingPlayerData_v1")
 local backupStore = DataStoreService:GetDataStore("FishingPlayerData_v1_Backup")
 
@@ -60,8 +60,10 @@ local function sanitizeData(raw)
 				and entry.weightKg > 0 and entry.weightKg < 1000
 				and entry.scaleFactor > 0 and entry.scaleFactor < 20
 			then
+				if not entry.id then entry.id = HttpService:GenerateGUID(false) end
 				if #clean.Inventory < MAX_INVENTORY_SIZE then
 					table.insert(clean.Inventory, {
+						id = entry.id,
 						name = entry.name,
 						rarity = entry.rarity,
 						weightKg = entry.weightKg,
@@ -211,11 +213,11 @@ local function scheduleQuickSave(player)
 	end)
 end
 
-function PlayerDataService.AddFish(player, fishName, rarity, weightKg, scaleFactor)
+function PlayerDataService.AddFish(player, uuid, fishName, rarity, weightKg, scaleFactor)
 	local profile = profiles[player]
 	if not profile then return false end
 
-	if typeof(fishName) ~= "string" or typeof(rarity) ~= "string"
+	if typeof(uuid) ~= "string" or typeof(fishName) ~= "string" or typeof(rarity) ~= "string"
 		or typeof(weightKg) ~= "number" or typeof(scaleFactor) ~= "number"
 	then
 		return false
@@ -226,6 +228,7 @@ function PlayerDataService.AddFish(player, fishName, rarity, weightKg, scaleFact
 	end
 
 	table.insert(profile.Data.Inventory, {
+		id = uuid,
 		name = fishName,
 		rarity = rarity,
 		weightKg = weightKg,
@@ -238,15 +241,13 @@ function PlayerDataService.AddFish(player, fishName, rarity, weightKg, scaleFact
 	return true
 end
 
-function PlayerDataService.RemoveFish(player, fishName, rarity, weightKg, scaleFactor)
+function PlayerDataService.RemoveFish(player, uuid, fishName, rarity, weightKg, scaleFactor)
 	local profile = profiles[player]
 	if not profile then return false end
 
 	for i, entry in profile.Data.Inventory do
-		if entry.name == fishName
-			and entry.rarity == rarity
-			and math.abs(entry.weightKg - weightKg) < 0.001
-			and math.abs(entry.scaleFactor - scaleFactor) < 0.001
+		if (uuid and entry.id == uuid) or
+		   (not uuid and entry.name == fishName and entry.rarity == rarity and math.abs(entry.weightKg - weightKg) < 0.001 and math.abs(entry.scaleFactor - scaleFactor) < 0.001)
 		then
 			table.remove(profile.Data.Inventory, i)
 			profile.Dirty = true
@@ -257,15 +258,13 @@ function PlayerDataService.RemoveFish(player, fishName, rarity, weightKg, scaleF
 	return false
 end
 
-function PlayerDataService.SetFavorite(player, fishName, rarity, weightKg, scaleFactor, isFavorited)
+function PlayerDataService.SetFavorite(player, uuid, fishName, rarity, weightKg, scaleFactor, isFavorited)
 	local profile = profiles[player]
 	if not profile then return false end
 
 	for _, entry in profile.Data.Inventory do
-		if entry.name == fishName
-			and entry.rarity == rarity
-			and math.abs(entry.weightKg - weightKg) < 0.001
-			and math.abs(entry.scaleFactor - scaleFactor) < 0.001
+		if (uuid and entry.id == uuid) or
+		   (not uuid and entry.name == fishName and entry.rarity == rarity and math.abs(entry.weightKg - weightKg) < 0.001 and math.abs(entry.scaleFactor - scaleFactor) < 0.001)
 		then
 			entry.isFavorited = isFavorited == true
 			profile.Dirty = true

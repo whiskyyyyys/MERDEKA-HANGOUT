@@ -2,11 +2,13 @@ local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local Lighting = game:GetService("Lighting")
 
+local StarterGui = game:GetService("StarterGui")
+
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 local ZONE_NAME = "SpinMachine"
-local MAX_DISTANCE = 15 -- Jarak maksimum untuk membuka Spin GUI
+local MAX_DISTANCE = 10 -- Jarak maksimum untuk membuka Spin GUI
 
 -- Buat efek Blur untuk menu Spin jika belum ada
 local spinBlur = Lighting:FindFirstChild("SpinBlur")
@@ -18,6 +20,7 @@ if not spinBlur then
 end
 
 local isGuiOpen = false
+local hiddenGuis = {}
 
 local function setGuiState(state)
 	if isGuiOpen == state then return end
@@ -32,6 +35,20 @@ local function setGuiState(state)
 	isGuiOpen = state
 
 	if state then
+		-- Sembunyikan UI bawaan Roblox (Chat, Leaderboard, dll)
+		pcall(function()
+			StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, false)
+		end)
+		
+		-- Sembunyikan semua UI custom buatan player (kecuali SpinGui)
+		table.clear(hiddenGuis)
+		for _, gui in playerGui:GetChildren() do
+			if gui:IsA("ScreenGui") and gui.Name ~= "SpinGui" and gui.Enabled then
+				hiddenGuis[gui] = true
+				gui.Enabled = false
+			end
+		end
+	
 		spinGui.Enabled = true
 		spinFrame.Visible = true
 		
@@ -53,34 +70,43 @@ local function setGuiState(state)
 		camTween.Completed:Once(function()
 			spinFrame.Visible = false
 			spinGui.Enabled = false
+			
+			-- Kembalikan UI bawaan Roblox
+			pcall(function()
+				StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, true)
+			end)
+			
+			-- Kembalikan semua UI custom
+			for gui, _ in hiddenGuis do
+				if gui and gui.Parent then
+					gui.Enabled = true
+				end
+			end
+			table.clear(hiddenGuis)
 		end)
 	end
 end
 
-local cachedSpinMachine = nil
-local warningShown = false
+local spinMachines = {}
+local hasSearched = false
 
--- Fungsi untuk mencari Spin Machine
-local function findSpinMachine()
-	if cachedSpinMachine and cachedSpinMachine.Parent then return cachedSpinMachine end
+-- Fungsi untuk mencari SEMUA Spin Machine di map (dijalankan berulang jika belum ketemu satupun)
+local function getSpinMachines()
+	if hasSearched and #spinMachines > 0 then return spinMachines end
 	
-	local found = workspace:FindFirstChild(ZONE_NAME, true)
-	if not found then
-		for _, obj in ipairs(workspace:GetDescendants()) do
-			if string.match(string.lower(obj.Name), "spin") and (obj:IsA("BasePart") or obj:IsA("Model")) then
-				found = obj
-				break
-			end
+	table.clear(spinMachines)
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if string.lower(obj.Name) == "spinmachine" and (obj:IsA("BasePart") or obj:IsA("Model")) then
+			table.insert(spinMachines, obj)
 		end
 	end
 	
-	if found and not warningShown then
-		print("[SpinZoneClient] Spin Machine ditemukan: " .. found.Name)
-		warningShown = true
+	if #spinMachines > 0 then
+		hasSearched = true
+		print("[SpinZoneClient] Ditemukan " .. #spinMachines .. " area SpinMachine di map.")
 	end
 	
-	cachedSpinMachine = found
-	return found
+	return spinMachines
 end
 
 -- Deteksi jarak secara berkala
@@ -90,38 +116,35 @@ task.spawn(function()
 		local rootPart = character and character:FindFirstChild("HumanoidRootPart")
 		
 		if rootPart then
-			local spinMachine = findSpinMachine()
+			local machines = getSpinMachines()
+			local closestDistance = math.huge
+			local isNearAny = false
 			
-			if spinMachine then
+			for _, machine in ipairs(machines) do
 				local targetPos
-				if spinMachine:IsA("BasePart") then
-					targetPos = spinMachine.Position
-				elseif spinMachine:IsA("Model") then
-					if spinMachine.PrimaryPart then
-						targetPos = spinMachine.PrimaryPart.Position
+				if machine:IsA("BasePart") then
+					targetPos = machine.Position
+				elseif machine:IsA("Model") then
+					if machine.PrimaryPart then
+						targetPos = machine.PrimaryPart.Position
 					else
-						local firstPart = spinMachine:FindFirstChildWhichIsA("BasePart", true)
+						local firstPart = machine:FindFirstChildWhichIsA("BasePart", true)
 						if firstPart then targetPos = firstPart.Position end
 					end
 				end
 
 				if targetPos then
-					-- Jika jaraknya kurang dari 30 studs, buka GUI
 					local distance = (rootPart.Position - targetPos).Magnitude
-					if distance <= 30 then
-						setGuiState(true)
-					else
-						setGuiState(false)
+					if distance < closestDistance then
+						closestDistance = distance
 					end
-				else
-					setGuiState(false)
 				end
+			end
+			
+			if closestDistance <= MAX_DISTANCE then
+				setGuiState(true)
 			else
 				setGuiState(false)
-				if not warningShown then
-					warn("[SpinZoneClient] GAGAL: Tidak ada part atau model bernama 'Spin' atau 'SpinMachine' di Workspace!")
-					warningShown = true
-				end
 			end
 		end
 	end

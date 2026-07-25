@@ -75,6 +75,7 @@ function SellFishService.Init(remotes)
 		local fishNamesSold = {}
 
 		for _, tool in ipairs(fishToSell) do
+			local uuid = tool:GetAttribute("UUID")
 			local rarity = tool:GetAttribute("Rarity")
 			local weightKg = tool:GetAttribute("WeightKg")
 			local scaleFactor = tool:GetAttribute("SizeScale")
@@ -84,7 +85,7 @@ function SellFishService.Init(remotes)
 			if pricePerKg then
 				local finalPrice = math.floor((weightKg * pricePerKg) + 0.5)
 				totalCash += finalPrice
-				PlayerDataService.RemoveFish(player, fishName, rarity, weightKg, scaleFactor)
+				PlayerDataService.RemoveFish(player, uuid, fishName, rarity, weightKg, scaleFactor)
 				table.insert(fishNamesSold, fishName)
 				tool:Destroy()
 			end
@@ -114,12 +115,13 @@ function SellFishService.Init(remotes)
 		
 		tool:SetAttribute("IsFavorited", isFavorited == true)
 		
+		local uuid = tool:GetAttribute("UUID")
 		local fishName = tool.Name
 		local rarity = tool:GetAttribute("Rarity")
 		local weightKg = tool:GetAttribute("WeightKg")
 		local scaleFactor = tool:GetAttribute("SizeScale")
 		
-		PlayerDataService.SetFavorite(player, fishName, rarity, weightKg, scaleFactor, isFavorited == true)
+		PlayerDataService.SetFavorite(player, uuid, fishName, rarity, weightKg, scaleFactor, isFavorited == true)
 	end)
 end
 
@@ -162,7 +164,8 @@ function SellFishService.AutoSellAll(player)
 		if pricePerKg then
 			local finalPrice = math.floor((weightKg * pricePerKg) + 0.5)
 			totalCash += finalPrice
-			PlayerDataService.RemoveFish(player, fishName, rarity, weightKg, scaleFactor)
+			local uuid = tool:GetAttribute("UUID")
+			PlayerDataService.RemoveFish(player, uuid, fishName, rarity, weightKg, scaleFactor)
 			table.insert(fishNamesSold, fishName)
 			tool:Destroy()
 		end

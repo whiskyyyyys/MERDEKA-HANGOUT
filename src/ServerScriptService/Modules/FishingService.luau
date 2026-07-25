@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
 
 local FishConfig = require(ReplicatedStorage.Modules.FishConfig)
 local InventoryService = require(ServerScriptService.Modules.InventoryService)
@@ -151,9 +152,10 @@ function FishingService.Init(remotes)
 			iconId = template.TextureId or ""
 		end
 
-		local success, weightKg, scaleFactor = InventoryService.GiveFish(player, rarity, fishName)
+		local uuid = HttpService:GenerateGUID(false)
+		local success, weightKg, scaleFactor = InventoryService.GiveFish(player, rarity, fishName, uuid)
 		if success then
-			PlayerDataService.AddFish(player, fishName, rarity, weightKg, scaleFactor)
+			PlayerDataService.AddFish(player, uuid, fishName, rarity, weightKg, scaleFactor)
 			
 			-- OPTIMASI AFK: Auto-Sell jika inventaris mulai penuh (mencegah lag karena kebanyakan Tool di Backpack)
 			local inventory = PlayerDataService.GetInventory(player)

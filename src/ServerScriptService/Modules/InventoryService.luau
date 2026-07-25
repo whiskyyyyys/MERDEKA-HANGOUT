@@ -150,7 +150,7 @@ end
 
 -- Buat instance Tool (scaled + billboard), TIDAK diparent kemanapun.
 -- Dipakai baik buat tangkapan baru MAUPUN restore dari DataStore (pakai weight/scale yang SAMA persis).
-function InventoryService.CreateFishTool(rarity, fishName, weightKg, scaleFactor, isFavorited)
+function InventoryService.CreateFishTool(rarity, fishName, weightKg, scaleFactor, isFavorited, uuid)
 	local template = InventoryService.GetFishTemplate(rarity, fishName)
 	if not template then return nil end
 
@@ -162,18 +162,19 @@ function InventoryService.CreateFishTool(rarity, fishName, weightKg, scaleFactor
 	clone:SetAttribute("SizeScale", scaleFactor)
 	clone:SetAttribute("Rarity", rarity)
 	clone:SetAttribute("IsFavorited", isFavorited == true)
+	if uuid then clone:SetAttribute("UUID", uuid) end
 	addFishBillboard(clone, fishName, weightKg)
 
 	return clone
 end
 
 -- Tangkapan baru: roll weight/size acak lalu kasih ke Backpack.
-function InventoryService.GiveFish(player, rarity, fishName)
+function InventoryService.GiveFish(player, rarity, fishName, uuid)
 	local backpack = player:FindFirstChild("Backpack") or player:WaitForChild("Backpack", 5)
 	if not backpack then return false, nil, nil end
 
 	local weightKg, scaleFactor = InventoryService.RollWeightAndSize(rarity)
-	local clone = InventoryService.CreateFishTool(rarity, fishName, weightKg, scaleFactor, false)
+	local clone = InventoryService.CreateFishTool(rarity, fishName, weightKg, scaleFactor, false, uuid)
 	if not clone then return false, nil, nil end
 
 	clone.Parent = backpack
@@ -186,7 +187,7 @@ function InventoryService.RestoreInventory(player, savedInventory)
 	if not backpack then return end
 
 	for _, entry in savedInventory do
-		local clone = InventoryService.CreateFishTool(entry.rarity, entry.name, entry.weightKg, entry.scaleFactor, entry.isFavorited)
+		local clone = InventoryService.CreateFishTool(entry.rarity, entry.name, entry.weightKg, entry.scaleFactor, entry.isFavorited, entry.id)
 		if clone then
 			clone.Parent = backpack
 		end
