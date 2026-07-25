@@ -60,20 +60,17 @@ client.on('clientReady', async () => {
         try {
             const channel = await client.channels.fetch(channelId);
             if (channel) {
-                const updateMessage = `**Game Update v1.2.0 (#21)**\n> *The latest update is live. Read below for the specific changes*\n\n` +
-                                      `✦ **Additions**\n\`\`\`diff\n` +
-                                      `+ Added a brand new "Carry Player" feature with full animations (Bridal, Hug, Piggyback)!\n` +
-                                      `+ Implemented a new Gift System: you can now gift Shop Items to other players using MHCoin.\n` +
-                                      `+ New Redeem Code System: added working redeem codes to claim free rewards.\n` +
-                                      `+ Minigames Update: added new minigames map features and mechanics.\n\`\`\`\n\n` +
+                const updateMessage = `**Game Update v1.5.0 (#25)**\n> *Pembaruan besar-besaran & Optimalisasi Sistem telah rilis! Baca detail lengkap perubahannya di bawah ini:*\n\n` +
+                                      `✦ **Additions / Enhancements**\n\`\`\`diff\n` +
+                                      `+ [UI ANIMATION] Aesthetic Menus: Menu Skin Rod sekarang dilengkapi animasi drop-down yang sangat mulus dari langit saat dibuka dan meluncur saat ditutup.\n` +
+                                      `+ [UI ANIMATION] Interactive Buttons: Tombol silang (Close) pada toko MHCoin, Cash Shop, dan Game Rules sekarang memiliki efek membesar (hover scale) interaktif!\n` +
+                                      `+ [SYSTEM] Advanced Spin Detection: Spin Machine kini mampu mendeteksi keberadaan mesin yang baru dimuat di arena manapun secara cerdas (Dynamic Loading Loop).\n\`\`\`\n\n` +
                                       `⇄ **Changes**\n\`\`\`md\n` +
-                                      `# Avatar Context Menu has been fully redesigned to support dynamic options.\n` +
-                                      `# Shop MHCoin logic has been overhauled to support secure gifting and remote purchases.\n` +
-                                      `# Improved general UI layouts for a smoother player experience.\n\`\`\`\n\n` +
+                                      `# Focus Mode: Ketika kamu masuk ke zona Spin, semua UI lain (seperti inventory, dll) di layar akan otomatis disembunyikan agar kamu bisa fokus 100% pada roda Spin!\n` +
+                                      `# Presisi Sistem Inventory: Sistem penyimpanan ikan ke database direstrukturisasi dengan injeksi UUID 100% akurat. Tidak ada lagi sistem perbandingan desimal yang usang.\n\`\`\`\n\n` +
                                       `▲ **Fixes**\n\`\`\`md\n` +
-                                      `# Fixed a major bug where Avatar Context Menu buttons (Gift, Carry) wouldn't appear correctly.\n` +
-                                      `# Fixed the UI layout bug where carry selection options were hidden under the menu background.\n` +
-                                      `# Fixed an issue where the menu couldn't be closed after an action was performed.\n\`\`\``;
+                                      `# [CRITICAL FIX] Memperbaiki bug kritis di mana ikan yang sudah di-Favorite (Bintang Emas) tiba-tiba kehilangan statusnya saat player Rejoin karena masalah presisi desimal DataStore.\n` +
+                                      `# Memperbaiki masalah Spin GUI yang gagal muncul di Arena 2 dan 3 karena skrip membaca tiang secara statis alih-alih melakukan scanning ke seluruh map terdekat.\n\`\`\``;
                 await channel.send(updateMessage);
                 console.log("Berhasil mengirim auto-update log ke channel public.");
             }
